@@ -3,11 +3,15 @@ from dataclasses import dataclass
 
 import math
 
-from src.models.simulation.simulation import Agent
+from src.models.simulation.agent import Agent
 
 
 @dataclass()
 class Arena:
+    # Visual Parameters, size that will be used to display the arena
+    # TODO: find a way to make it depend on the sub arena type
+    xlim: float
+    ylim: float
 
     def collide(self, agent: Agent):
         # TODO: implement collision detection for agents in the different arenas

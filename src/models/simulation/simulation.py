@@ -1,4 +1,3 @@
-import random
 import threading
 import time
 
@@ -6,143 +5,16 @@ import dearpygui.dearpygui as dpg
 import math
 import numpy as np
 
+from src.models.simulation.agent import Agent
 from src.models.simulation.arena import Arena, RectangleArena
-from src.modules.communication.model import Communication, FakeCommunication
-from src.modules.triangulation.model import Triangulation, FakeTriangulation
 
-arena_width = 50
-arena_height = 50
-
-communication_refresh_rate = 0.01  # 10 milliseconds
-triangulation_refresh_rate = 0.05  # 500 milliseconds
-
-tri_x = {"triangulation": []}
-tri_y = {"triangulation": []}
-
+# TODO: could want to use `pause` methods in agents to pause their threads
 paused: bool = True
-
-
-def toggle_pause():
-    global paused
-    paused = not paused
-
-
-# Define the Agent class
-class Agent:
-    def __init__(
-            self, agent_id, x, y,
-            agents_speed=0.01,
-            communication_chances=0,  # TODO: implement communication module and remove this parameter
-            triangulation: Triangulation = FakeTriangulation(agent_id=0),
-            communication: Communication = FakeCommunication(),
-    ):
-        global tri_x, tri_y
-
-        self.id = agent_id
-        self.x = x
-        self.y = y
-
-        self.radius = 1
-        self.color = [255, 255, 255]
-
-        self.communication = communication
-        self.triangulation = triangulation
-
-        tri_y[str(self)] = []
-        tri_x[str(self)] = []
-
-        self.data = dict()
-        self.data[self.id] = dict()
-
-        self.communication_chances = communication_chances
-
-        self.speed = agents_speed
-        self.angle = random.randint(0, 360)
-        self.dx = math.cos(self.angle)
-        self.dy = math.sin(self.angle)
-
-    def __str__(self):
-        return f"agent_{self.id}"
-
-    def walk_forward(self, agents: list):
-        # TODO: implement agent movement as a parameter of the agent
-        # Simulate random movement
-        self.x += self.speed * self.dx
-        self.y += self.speed * self.dy
-
-    def collide(self, agents: list):
-        for agent in agents:
-            if (
-                    agent.y - agent.radius < self.y + self.radius < agent.y + agent.radius or agent.y - agent.radius < self.y - self.radius < agent.y + agent.radius
-            ) and (
-                    agent.x - agent.radius < self.x + self.radius < agent.x + agent.radius or agent.x - agent.radius < self.x - self.radius < agent.x + agent.radius
-            ):
-                if self.x < agent.x:
-                    self.dx = -1
-                else:
-                    self.dx = 1
-                if self.y < agent.y:
-                    self.dy *= -1
-                else:
-                    self.dy *= 1
-
-    def receive_information(self, other_agents: list, context: np.ndarray):
-        index = round(random.uniform(0, 1) * (len(other_agents) - 1))
-        other_agent = other_agents[index]
-
-        if other_agent.id == self.id:
-            return
-
-        information = other_agent.send_information()
-        if self.id < other_agent.id:
-            distance = context[self.id, other_agent.id]
-        else:
-            distance = context[other_agent.id, self.id]
-
-        self.data[self.id][other_agent.id] = distance
-        self.data[other_agent.id] = information
-
-        # TODO: add distance computation errors, noise, etc.
-        self.triangulation.update_distance_matrix(other_agent.id, information, distance)
-
-    def send_information(self):
-        return self.data[self.id]
-
-    def triangulation_handler(self):
-        global triangulation_refresh_rate
-
-        while True:
-            if paused:
-                # Avoid causing the thread to over-consume CPU
-                time.sleep(triangulation_refresh_rate)
-                continue
-
-            x, y = self.triangulation.update_triangulation()
-
-            if x is not None and y is not None:
-                tri_x[f"agent_{self.id}"] = x
-                tri_y[f"agent_{self.id}"] = y
-
-            time.sleep(triangulation_refresh_rate)
-
-    def communication_handler(self, agents, context):
-        global communication_refresh_rate
-
-        while True:
-            if paused:
-                # Avoid causing the thread to over-consume CPU
-                time.sleep(communication_refresh_rate)
-                continue
-
-            if random.random() < self.communication_chances:
-                self.receive_information(agents, context)
-
-            time.sleep(communication_refresh_rate)
 
 
 class Simulation:
     def __init__(
-            self, dim=5, arena: Arena = RectangleArena(width=arena_width, height=arena_height),
+            self, dim=5, arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
             refresh_rate=0.01,  # 10 milliseconds
             agents_speed=0.05,  # 5 centimeters per seconds
             triangulation_precision=1.0,  # 1 meter
@@ -150,20 +22,28 @@ class Simulation:
     ):
         self.dim = dim
         self.agents = []
+        self.agents_thread = []
 
         self.arena = arena
 
         # Parameters
-        self.refresh_rate = refresh_rate
+        self.refresh_rate = refresh_rate  # simulation refresh rate in seconds
         self.agents_speed = agents_speed * self.refresh_rate  # to have a speed in meters per refresh_rate
         self.triangulation_precision = triangulation_precision
-        self.communication_chances = communication_refresh_rate / communication_frequency
+        self.communication_frequency = communication_frequency
 
         self.distance_matrix = np.zeros((dim, dim), dtype=float)
         self.connection_matrix = np.zeros((dim, dim), dtype=int)
         self.saved_const = []
 
         self.main_window = None
+
+    def toggle_pause(self):
+        global paused
+        paused = not paused
+
+        for agent in self.agents:
+            agent.paused = paused
 
     def launch_agent_threads(self):
         size = len(self.agents)
@@ -177,6 +57,11 @@ class Simulation:
 
         for thread in launch_threads:
             thread.start()
+            self.agents_thread.append(thread)
+
+    def stop_agent_threads(self):
+        for thread in self.agents_thread:
+            thread.join()
 
     def launching_agents_controller(self, start, end):
         for i in range(start, end):
@@ -186,6 +71,8 @@ class Simulation:
             agent_thread.start()
 
     def agent_controller(self, thread_agent: Agent):
+        global paused
+
         # Start agent triangulation
         triangulation_thread = threading.Thread(
             target=thread_agent.triangulation_handler,
@@ -207,7 +94,7 @@ class Simulation:
                 continue
 
             # Simulate agent movement
-            thread_agent.walk_forward(self.agents)
+            thread_agent.move(thread_agent)
 
             # Simulate agent collision
             self.arena.collide(thread_agent)
@@ -231,34 +118,35 @@ class Simulation:
                     self.distance_matrix[i, j] = 0
 
     def render_triangulation(self):
-        global tri_x, tri_y
-
         for agent in self.agents:
-            dpg.configure_item(f"triangulation_{str(agent)}", x=tri_x[str(agent)], y=tri_y[str(agent)])
+            dpg.configure_item(f"triangulation_{str(agent)}", x=agent.tri_x, y=agent.tri_y)
 
     def launch_gui(self):
         dpg.create_context()
         dpg.create_viewport(title="Simulation", x_pos=0, y_pos=0, width=1100, height=645)
 
-        with dpg.window(pos=[0, 0], autosize=True, no_collapse=True, no_resize=True, no_close=True,
-                        no_move=True,
-                        no_title_bar=True) as main_window:
+        with dpg.window(
+                pos=[0, 0], autosize=True, no_title_bar=True,
+                no_collapse=True, no_resize=True, no_close=True, no_move=True,
+        ) as main_window:
             with dpg.group():
                 with dpg.group(horizontal=True):
                     with dpg.plot(no_menus=False, no_title=True, no_box_select=True, no_mouse_pos=True, width=500,
                                   height=500, equal_aspects=True):
-                        default_x = dpg.add_plot_axis(axis=0, no_gridlines=True, no_tick_marks=True,
-                                                      no_tick_labels=True,
-                                                      label="", lock_min=True)
-                        dpg.set_axis_limits(axis=default_x, ymin=0, ymax=arena_width)
-                        default_y = dpg.add_plot_axis(axis=1, no_gridlines=True, no_tick_marks=True,
-                                                      no_tick_labels=True,
-                                                      label="", lock_min=True)
-                        dpg.set_axis_limits(axis=default_y, ymin=0, ymax=arena_height)
+                        default_x = dpg.add_plot_axis(
+                            axis=0, no_gridlines=True, no_tick_marks=True, no_tick_labels=True, label="", lock_min=True
+                        )
+                        dpg.set_axis_limits(axis=default_x, ymin=0, ymax=self.arena.xlim)
+                        default_y = dpg.add_plot_axis(
+                            axis=1, no_gridlines=True, no_tick_marks=True, no_tick_labels=True, label="", lock_min=True
+                        )
+                        dpg.set_axis_limits(axis=default_y, ymin=0, ymax=self.arena.ylim)
 
                         # Draw arena walls
-                        dpg.draw_rectangle(pmin=[0, 0], pmax=[arena_width, arena_height], color=[33, 33, 33],
-                                           fill=[33, 33, 33])
+                        if isinstance(self.arena, RectangleArena):
+                            dpg.draw_rectangle(pmin=[0, 0], pmax=[self.arena.width, self.arena.height],
+                                               color=[33, 33, 33],
+                                               fill=[33, 33, 33])
 
                         # Draw connections between agents
                         for i in range(self.dim):
@@ -288,30 +176,23 @@ class Simulation:
                                         width=500, height=500, equal_aspects=True
                                 ):
                                     triangulation_x_axis = dpg.add_plot_axis(dpg.mvXAxis, label="x")
-                                    dpg.set_axis_limits(axis=triangulation_x_axis, ymin=-(arena_height * math.sqrt(2)),
-                                                        ymax=arena_height * math.sqrt(2))
+                                    dpg.set_axis_limits(
+                                        axis=triangulation_x_axis,
+                                        ymin=-(self.arena.xlim * math.sqrt(2)),
+                                        ymax=self.arena.xlim * math.sqrt(2)
+                                    )
                                     triangulation_y_axis = dpg.add_plot_axis(dpg.mvYAxis, label="y")
-                                    dpg.set_axis_limits(axis=triangulation_y_axis, ymin=-(arena_width * math.sqrt(2)),
-                                                        ymax=arena_width * math.sqrt(2))
+                                    dpg.set_axis_limits(
+                                        axis=triangulation_y_axis,
+                                        ymin=-(self.arena.ylim * math.sqrt(2)),
+                                        ymax=self.arena.ylim * math.sqrt(2)
+                                    )
                                     dpg.add_scatter_series(
-                                        tri_x[str(agent)], tri_y[str(agent)],
+                                        agent.tri_x, agent.tri_y,
                                         parent=dpg.last_item(), tag=f"triangulation_{str(agent)}"
                                     )
 
-                        # with triangulation_plot:
-                        #     self.update_matrices()
-                        #     self.update_triangulation()
-                        #
-                        #     dpg.add_plot_axis(dpg.mvXAxis, label="x")
-                        #     dpg.add_plot_axis(dpg.mvYAxis, label="y")
-                        #     dpg.add_scatter_series(
-                        #         tri_x["simulation"], tri_y["simulation"],
-                        #         parent=dpg.last_item(), tag="triangulation"
-                        #     )
-                        #
-                        #     self.render_triangulation()
-
-                dpg.add_button(label="Pause", callback=toggle_pause)
+                dpg.add_button(label="Pause", callback=self.toggle_pause)
 
         dpg.setup_dearpygui()
         dpg.show_viewport()

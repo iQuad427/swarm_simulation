@@ -28,8 +28,8 @@ if __name__ == '__main__':
     #   - find an iterative way to triangulate the swarm;
     #      - avoid recomputing the triangulation from scratch each time
 
-    experiment = SameSpeedRandomPlacementNoTriangulationNoCommunicationExperiment(
-        dim=10,  # number of agents
+    experiment = SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment(
+        dim=5,  # number of agents
         refresh_rate=0.01,  # refresh rate of the simulation (in seconds)
         agents_speed=1,  # speed of the agents (in meters per second)
         triangulation_precision=0.1,  # precision of the triangulation (in meters)

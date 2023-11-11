@@ -4,7 +4,7 @@ import numpy as np
 class Triangulation:
     """Triangulation of the swarm using a distance matrix and the Delaunay triangulation algorithm"""
 
-    def __init__(self, agent_id, dim=1, precision=10.0):
+    def __init__(self, agent_id, dim=1, precision=1.0, refresh_rate=0.05):
         self.tri_x = []
         self.tri_y = []
 
@@ -14,6 +14,7 @@ class Triangulation:
         self.dim = dim
 
         self.precision = precision
+        self.refresh_rate = refresh_rate
 
         self.id_to_index = dict({
             self.agent_id: 0

@@ -7,6 +7,7 @@ from src.modules.triangulation.model import Triangulation
 
 class DelaunayTriangulation(Triangulation):
     def update_triangulation(self):
+        print("update_triangulation")
         if self.dim < 2:
             return None, None
 
