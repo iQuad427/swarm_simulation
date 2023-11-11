@@ -64,7 +64,13 @@ class Agent:
     def __str__(self):
         return f"agent_{self.id}"
 
-    def verify_other_agents(self, agents: list):
+    def walk_forward(self, agents: list):
+        # TODO: implement agent movement as a parameter of the agent
+        # Simulate random movement
+        self.x += self.speed * self.dx
+        self.y += self.speed * self.dy
+
+    def collide(self, agents: list):
         for agent in agents:
             if (
                     agent.y - agent.radius < self.y + self.radius < agent.y + agent.radius or agent.y - agent.radius < self.y - self.radius < agent.y + agent.radius
@@ -79,28 +85,6 @@ class Agent:
                     self.dy *= -1
                 else:
                     self.dy *= 1
-
-    def verify_wall_collide(self):
-        if self.x - self.radius < 0:
-            self.dx = 1
-        elif self.x + self.radius > arena_width:
-            self.dx = -1
-
-        if self.y - self.radius < 0:
-            self.dy = 1
-        elif self.y + self.radius > arena_height:
-            self.dy = -1
-
-    def collide(self, agents: list):
-        self.verify_wall_collide()
-        self.verify_other_agents(agents)
-
-    def walk_forward(self, agents: list):
-        # Simulate random movement
-        self.x += self.speed * self.dx
-        self.y += self.speed * self.dy
-
-        self.collide(agents)
 
     def receive_information(self, other_agents: list, context: np.ndarray):
         index = round(random.uniform(0, 1) * (len(other_agents) - 1))
@@ -224,6 +208,10 @@ class Simulation:
 
             # Simulate agent movement
             thread_agent.walk_forward(self.agents)
+
+            # Simulate agent collision
+            self.arena.collide(thread_agent)
+            thread_agent.collide(self.agents)
 
             time.sleep(self.refresh_rate)
 
