@@ -5,8 +5,8 @@ import dearpygui.dearpygui as dpg
 import math
 import numpy as np
 
-from src.models.simulation.agent import Agent
-from src.models.simulation.arena import Arena, RectangleArena
+from src.simulation.agent import Agent
+from src.simulation.arena import Arena, RectangleArena
 
 # TODO: could want to use `pause` methods in agents to pause their threads
 paused: bool = True

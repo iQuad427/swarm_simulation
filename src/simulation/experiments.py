@@ -1,8 +1,7 @@
-import random
-
-from src.models.simulation.simulation import Simulation, Agent
+from src.simulation.simulation import Simulation, Agent
 from src.modules.communication.model import FakeCommunication
-from src.modules.movement.movements import walk_forward
+from src.modules.communication.types.general import GlobalCommunication
+from src.modules.movement.simple import walk_forward, random_walk
 from src.modules.triangulation.types.delaunay import DelaunayTriangulation
 
 
@@ -22,7 +21,8 @@ class SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment
             Agent(
                 i, *self.arena.place_agent_randomly(),
                 agents_speed=self.agents_speed,
-                communication=FakeCommunication(
+                communication=GlobalCommunication(
+                    agent_id=i,
                     refresh_rate=self.refresh_rate,
                     communication_frequency=self.communication_frequency,
                 ),
@@ -41,7 +41,8 @@ class AllStaticButOneRandomPlacementDelaunayTriangulationGlobalCommunicationExpe
             Agent(
                 0, *self.arena.place_agent_randomly(),
                 agents_speed=self.agents_speed,
-                communication=FakeCommunication(
+                communication=GlobalCommunication(
+                    agent_id=0,
                     refresh_rate=self.refresh_rate,
                     communication_frequency=self.communication_frequency,
                 ),
@@ -49,12 +50,13 @@ class AllStaticButOneRandomPlacementDelaunayTriangulationGlobalCommunicationExpe
                     agent_id=0,
                     precision=self.triangulation_precision,
                 ),
-                agent_movement=walk_forward,
+                agent_movement=random_walk,
             ),
             *[Agent(
                 i, *self.arena.place_agent_randomly(),
                 agents_speed=0,
-                communication=FakeCommunication(
+                communication=GlobalCommunication(
+                    agent_id=i,
                     refresh_rate=self.refresh_rate,
                     communication_frequency=self.communication_frequency,
                 ),

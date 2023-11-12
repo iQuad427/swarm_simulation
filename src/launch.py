@@ -1,16 +1,20 @@
-from src.models.simulation.experiments import (
+from src.simulation.experiments import (
     SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment,
     AllStaticButOneRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment,
-    SameSpeedRandomPlacementNoTriangulationNoCommunicationExperiment,
 )
 
 if __name__ == '__main__':
     # TODO:
     #  Simulation Functionalities:
-    #   - give the arena shape and size as parameters;
-    #   - add a way to save the triangulation over time;
+    #   - give the arena shape and size as a parameter of the simulation;
+    #   - add a way to save the triangulation over time (dashboard?);
+    #      - save triangulation and agents positions at each x seconds;
+    #      - then be able to plot the evolution of the triangulation over time;
     #   - add parametrisation inside of the GUI;
     #      - may require to separate the GUI from the simulation;
+    #         - first, be able to run the simulation without the GUI;
+    #         - then, allow for start/stop of the simulation, with thread kill and start;
+    #         - finally, add the GUI and add the parametrisation;
     #      - idea is to allow for changing the simulation, without having to stop the UI;
     #      - parameters to change:
     #         - number of agents;

@@ -1,13 +1,18 @@
 import math
-import numpy as np
 from welltestpy.tools import triangulate, sym
 
-from src.modules.triangulation.model import Triangulation
+from src.modules.triangulation.model import DistanceMatrixTriangulation
 
 
-class DelaunayTriangulation(Triangulation):
+class DelaunayTriangulation(DistanceMatrixTriangulation):
+    """Triangulation of the swarm using a distance matrix and the Delaunay triangulation algorithm"""
+
+    def __init__(self, agent_id, dim=1, precision=10.0):
+        super().__init__(agent_id, dim, precision)
+
+        self.previous_const = []
+
     def update_triangulation(self):
-        print("update_triangulation")
         if self.dim < 2:
             return None, None
 

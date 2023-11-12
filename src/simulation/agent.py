@@ -6,7 +6,7 @@ import math
 import numpy as np
 
 from src.modules.communication.model import Communication, FakeCommunication
-from src.modules.movement.movements import walk_forward
+from src.modules.movement.simple import walk_forward
 from src.modules.triangulation.model import Triangulation, FakeTriangulation
 
 
@@ -14,7 +14,7 @@ class Agent:
     def __init__(
             self, agent_id, x, y,
             agents_speed=0.01,
-            triangulation: Triangulation = FakeTriangulation(agent_id=0),
+            triangulation: Triangulation = FakeTriangulation(),
             communication: Communication = FakeCommunication(),
             agent_movement=walk_forward,
     ):
@@ -75,7 +75,7 @@ class Agent:
         if other_agent.id == self.id:
             return
 
-        information = other_agent.send_information()
+        information = other_agent.communication.send_information()
         if self.id < other_agent.id:
             distance = context[self.id, other_agent.id]
         else:
@@ -86,6 +86,8 @@ class Agent:
 
         # TODO: add distance computation errors, noise, etc.
         self.triangulation.update_distance_matrix(other_agent.id, information, distance)
+
+        return other_agent.id, distance, information
 
     def send_information(self):
         return self.data[self.id]
@@ -112,8 +114,20 @@ class Agent:
                 time.sleep(self.communication.refresh_rate)
                 continue
 
-            if random.random() < self.communication.communication_chances:
-                self.receive_information(agents, context)
+            # Receive information from another agent
+            agent_id, distance, information = self.communication.receive_information(agents, context)
+
+            if agent_id == -1:
+                # Drop the information, did not communicate
+                continue
+
+            # Update current information with the received one
+            self.data[self.id][agent_id] = distance
+            self.data[agent_id] = information
+            self.communication.data = self.data
+
+            # Update triangulation with the new information
+            self.triangulation.update_information(agent_id, distance, information)
 
             time.sleep(self.communication.refresh_rate)
 

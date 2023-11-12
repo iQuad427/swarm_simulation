@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import math
 
-from src.models.simulation.agent import Agent
+from src.simulation.agent import Agent
 
 
 @dataclass()
