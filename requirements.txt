@@ -1,0 +1,5 @@
+numpy
+dearpygui
+scikit-image
+welltestpy
+matplotlib

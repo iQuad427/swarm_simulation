@@ -7,27 +7,27 @@ from src.modules.triangulation.model import DistanceMatrixTriangulation
 class DelaunayTriangulation(DistanceMatrixTriangulation):
     """Triangulation of the swarm using a distance matrix and the Delaunay triangulation algorithm"""
 
-    def __init__(self, agent_id, dim=1, precision=10.0):
-        super().__init__(agent_id, dim, precision)
+    def __init__(self, agent_id, precision=10.0, refresh_rate=0.05):
+        super().__init__(agent_id, precision=precision, refresh_rate=refresh_rate)
 
         self.previous_const = []
 
     def update_triangulation(self):
         if self.dim < 2:
-            return None, None
+            return None, None, None
 
         matrix = self._prune_distance_matrix()
         try:
             const = triangulate(sym(matrix), prec=self.precision)
         except ValueError:
             # print("ValueError: distances not usable for now")
-            return None, None
+            return None, None, None
 
         if not const:
             if not self.previous_const:
                 self.tri_x = [0]
                 self.tri_y = [0]
-            return None, None
+            return None, None, None
 
         points = []
 
@@ -61,6 +61,50 @@ class DelaunayTriangulation(DistanceMatrixTriangulation):
             self.tri_x = x
             self.tri_y = y
 
-            return self.tri_x, self.tri_y
+            return self.tri_x, self.tri_y, None
 
-        return None, None
+        return None, None, None
+
+
+class DelaunaySubTriangulation(DelaunayTriangulation):
+    """Triangulation of the swarm using a distance matrix and the Delaunay triangulation algorithm"""
+
+    def __init__(self, agent_id, precision=10.0, refresh_rate=0.05):
+        super().__init__(agent_id, precision=precision, refresh_rate=refresh_rate)
+
+        self.previous_const = []
+        self.index_to_id = [agent_id]
+
+    def update_information(self, other_agent_id, distance, information):
+        previous = self.dim
+
+        super().update_information(other_agent_id, distance, information)
+
+        if previous < self.dim:
+            self.index_to_id.append(other_agent_id)
+
+    def update_triangulation(self):
+        # if self.agent_id == 0:
+        #     print("UPDATING SUB TRIANGULATION")
+
+        x, y, _ = super().update_triangulation()
+
+        # if self.agent_id == 0:
+        #     print("X:", x)
+        #     print("Y:", y)
+
+        if x is None or y is None:
+            return None, None, {}
+
+        num = len(x) if len(x) == len(y) else 0
+
+        res = {
+            self.index_to_id[i]: [x[i], y[i]] for i in range(num)
+        }
+
+        res[self.agent_id] = [0, 0]
+
+        # if self.agent_id == 0:
+        #     print("RES:", res)
+
+        return x, y, res

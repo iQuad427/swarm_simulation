@@ -1,11 +1,13 @@
-from src.simulation.experiments import (
+from src.experiments import (
     SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment,
-    AllStaticButOneRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment,
+    AllStaticButOneRandomPlacementDelaunayTriangulationDistanceLimitedCommunicationExperiment,
+    AllStaticRectanglePlacementExperiment, DelaunayCommunicationExperiment,
 )
 
 if __name__ == '__main__':
     # TODO:
     #  Simulation Functionalities:
+    #   - show the communication radius of each agent;
     #   - give the arena shape and size as a parameter of the simulation;
     #   - add a way to save the triangulation over time (dashboard?);
     #      - save triangulation and agents positions at each x seconds;
@@ -32,11 +34,12 @@ if __name__ == '__main__':
     #   - find an iterative way to triangulate the swarm;
     #      - avoid recomputing the triangulation from scratch each time
 
-    experiment = SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment(
-        dim=5,  # number of agents
+    experiment = DelaunayCommunicationExperiment(
+        dim=6,  # number of agents
         refresh_rate=0.01,  # refresh rate of the simulation (in seconds)
         agents_speed=1,  # speed of the agents (in meters per second)
         triangulation_precision=0.1,  # precision of the triangulation (in meters)
         communication_frequency=0.01,  # frequency of the communication (in seconds)
+        # communication_radius=20,  # radius of the communication (in meters)
     )
     experiment.launch()

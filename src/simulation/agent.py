@@ -1,9 +1,7 @@
 # Define the Agent class
+import math
 import random
 import time
-
-import math
-import numpy as np
 
 from src.modules.communication.model import Communication, FakeCommunication
 from src.modules.movement.simple import walk_forward
@@ -25,7 +23,7 @@ class Agent:
         self.radius = 1
         self.color = [255, 255, 255]
 
-        self.paused = True
+        self.paused = False
 
         self.communication = communication
         self.communicate = True
@@ -38,8 +36,12 @@ class Agent:
         self.tri_y = []
         self.tri_x = []
 
-        self.data = dict()
-        self.data[self.id] = dict()
+        self.data = {
+            self.id: {
+                "distances": dict(),
+                "more": dict()
+            },
+        }
 
         self.speed = agents_speed
         self.angle = random.randint(0, 360)
@@ -68,30 +70,6 @@ class Agent:
                 else:
                     self.dy *= 1
 
-    def receive_information(self, other_agents: list, context: np.ndarray):
-        index = round(random.uniform(0, 1) * (len(other_agents) - 1))
-        other_agent = other_agents[index]
-
-        if other_agent.id == self.id:
-            return
-
-        information = other_agent.communication.send_information()
-        if self.id < other_agent.id:
-            distance = context[self.id, other_agent.id]
-        else:
-            distance = context[other_agent.id, self.id]
-
-        self.data[self.id][other_agent.id] = distance
-        self.data[other_agent.id] = information
-
-        # TODO: add distance computation errors, noise, etc.
-        self.triangulation.update_distance_matrix(other_agent.id, information, distance)
-
-        return other_agent.id, distance, information
-
-    def send_information(self):
-        return self.data[self.id]
-
     def triangulation_handler(self):
         while self.triangulate:
             if self.paused:
@@ -99,7 +77,10 @@ class Agent:
                 time.sleep(self.triangulation.refresh_rate)
                 continue
 
-            x, y = self.triangulation.update_triangulation()
+            x, y, more = self.triangulation.update_triangulation()
+
+            if more is not None and isinstance(more, dict):
+                self.data[self.id]["more"] = more
 
             if x is not None and y is not None:
                 self.tri_x = x
@@ -121,10 +102,26 @@ class Agent:
                 # Drop the information, did not communicate
                 continue
 
-            # Update current information with the received one
-            self.data[self.id][agent_id] = distance
+            # THIS IS NO CODE: just a representation of the data structure
+            # self.data = {
+            #     agent.id: {
+            #         "distances": dict(),
+            #         "more": dict()
+            #     } for agent in agents
+            # }
+            self.data[self.id]["distances"][agent_id] = distance
+
+            # THIS IS NO CODE: just a representation of the data structure
+            # information = {
+            #     "distances": dict(),
+            #     "more": dict()
+            # }
             self.data[agent_id] = information
+
             self.communication.data = self.data
+
+            # if self.id == 0:
+            #     print("AGENT DATA:", self.data)
 
             # Update triangulation with the new information
             self.triangulation.update_information(agent_id, distance, information)

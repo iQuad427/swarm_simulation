@@ -9,7 +9,7 @@ from src.simulation.agent import Agent
 from src.simulation.arena import Arena, RectangleArena
 
 # TODO: could want to use `pause` methods in agents to pause their threads
-paused: bool = True
+paused: bool = False
 
 
 class Simulation:
@@ -159,11 +159,17 @@ class Simulation:
 
                         # Draw agents
                         drawn_agents = []
+                        agents_label = []
                         for agent in self.agents:
                             item = dpg.draw_circle(
                                 (agent.x, agent.y), agent.radius,
                                 color=agent.color, fill=agent.color,
                             )
+                            text = dpg.draw_text(
+                                (agent.x - agent.radius/2, agent.y + agent.radius), str(agent.id),
+                                color=[0, 0, 0], size=2
+                            )
+                            agents_label.append(text)
                             drawn_agents.append(item)
 
                     triangulation_tab_bar = dpg.tab_bar(label="triangulation_tab_bar")
@@ -203,6 +209,7 @@ class Simulation:
             if not paused:
                 for agent in self.agents:
                     dpg.configure_item(drawn_agents[agent.id], center=(agent.x, agent.y))
+                    dpg.configure_item(agents_label[agent.id], pos=(agent.x - agent.radius/2, agent.y + agent.radius))
 
                 self.update_matrices()
                 # self.update_triangulation()

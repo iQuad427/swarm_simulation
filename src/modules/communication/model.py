@@ -8,7 +8,8 @@ class Communication:
         self.communication_chances = self.refresh_rate / communication_frequency
 
         self.data = dict({
-            self.agent_id: dict()
+            self.agent_id: dict(),
+            "more": dict()
         })
 
     def receive_information(self, other_agents: list, context: np.ndarray):

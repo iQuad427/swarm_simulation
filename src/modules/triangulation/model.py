@@ -23,7 +23,7 @@ class Triangulation(ABC):  # abstract class
         raise NotImplementedError("Triangulation does not implement a specific information update method")
 
     @abstractmethod
-    def update_triangulation(self):
+    def update_triangulation(self) -> (list, list, dict):
         """
         Update the triangulation of the swarm
         :return: x and y values of the points triangulated
@@ -32,15 +32,15 @@ class Triangulation(ABC):  # abstract class
 
 
 class DistanceMatrixTriangulation(Triangulation, ABC):
-    def __init__(self, agent_id, dim=1, precision=1.0, refresh_rate=0.05):
+    def __init__(self, agent_id, precision=1.0, refresh_rate=0.05):
         super().__init__(
             agent_id=agent_id,
             precision=precision,
             refresh_rate=refresh_rate
         )
 
-        self.distance_matrix = np.zeros((dim, dim), dtype=float)
-        self.dim = dim
+        self.dim = 1
+        self.distance_matrix = np.zeros((self.dim, self.dim), dtype=float)
 
         self.id_to_index = dict({
             self.agent_id: 0
@@ -69,6 +69,11 @@ class DistanceMatrixTriangulation(Triangulation, ABC):
         return matrix
 
     def update_information(self, other_agent_id, distance, information):
+        if "distances" in information:
+            information = information["distances"]
+        else:
+            return
+
         if other_agent_id == self.agent_id:
             return
 
@@ -103,4 +108,4 @@ class FakeTriangulation(Triangulation):
         pass
 
     def update_triangulation(self):
-        return [0], [0]
+        return [0], [0], dict()

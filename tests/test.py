@@ -7,15 +7,15 @@ robot_source_knowledge = {
     "A": [2, 5],
     "B": [5, 2],
     "C": [5, 5],
-    "D": [2, 2],
-    "E": [3, 3]
+    # "D": [2, 2],
+    "E": [5, 6]
 }
 
 robot_target_knowledge = {
-    "A": [4.1, 4.1],
-    "B": [0.9, 0.9],
-    "C": [1, 4],
-    "D": [4, 1],
+    "A": [3, 3],
+    "B": [0, 0],
+    "C": [0, 3],
+    # "D": [3, 0],
     "F": [6, 6]
 }
 
@@ -36,7 +36,9 @@ matrix = transform.estimate_transform('affine', source_points, target_points)
 transformed_robot_1_knowledge = {point: transform.matrix_transform(np.array(coord), matrix) for point, coord in robot_source_knowledge.items()}
 
 all_points_transformed = transform.matrix_transform(all_source_points, matrix)
-print(len(all_points_transformed))
+# print(len(all_points_transformed))
+
+print(transformed_robot_1_knowledge)
 print(all_points_transformed)
 
 

@@ -9,7 +9,6 @@ their positions from a given distance matrix.
 If the solution is not unique, all possible constellations will be returned.
 """
 
-import networkx as nx
 import matplotlib.pyplot as plt
 
 import numpy as np
