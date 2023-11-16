@@ -14,9 +14,14 @@ paused: bool = False
 
 class Simulation:
     def __init__(
-            self, dim=5, arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
+            self,
+            # SIMULATION PARAMETERS
+            dim=5,
+            arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
             refresh_rate=0.01,  # 10 milliseconds
+            # AGENTS PARAMETERS
             agents_speed=0.05,  # 5 centimeters per seconds
+            # MODULES PARAMETERS
             triangulation_precision=1.0,  # 1 meter
             communication_frequency=0.5,  # 500 milliseconds
     ):
@@ -32,6 +37,7 @@ class Simulation:
         self.triangulation_precision = triangulation_precision
         self.communication_frequency = communication_frequency
 
+        # Simulation Information
         self.distance_matrix = np.zeros((dim, dim), dtype=float)
         self.connection_matrix = np.zeros((dim, dim), dtype=int)
         self.saved_const = []
@@ -166,7 +172,7 @@ class Simulation:
                                 color=agent.color, fill=agent.color,
                             )
                             text = dpg.draw_text(
-                                (agent.x - agent.radius/2, agent.y + agent.radius), str(agent.id),
+                                (agent.x - agent.radius / 2, agent.y + agent.radius), str(agent.id),
                                 color=[0, 0, 0], size=2
                             )
                             agents_label.append(text)
@@ -209,7 +215,7 @@ class Simulation:
             if not paused:
                 for agent in self.agents:
                     dpg.configure_item(drawn_agents[agent.id], center=(agent.x, agent.y))
-                    dpg.configure_item(agents_label[agent.id], pos=(agent.x - agent.radius/2, agent.y + agent.radius))
+                    dpg.configure_item(agents_label[agent.id], pos=(agent.x - agent.radius / 2, agent.y + agent.radius))
 
                 self.update_matrices()
                 # self.update_triangulation()

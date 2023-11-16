@@ -94,7 +94,6 @@ class DistanceMatrixTriangulation(Triangulation, ABC):
                 # agent doesn't know the given robot, does not listen
                 pass
 
-
 class FakeTriangulation(Triangulation):
     """Fake triangulation for testing purposes"""
     def __init__(self):

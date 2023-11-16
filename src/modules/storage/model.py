@@ -7,7 +7,7 @@ class DataTypes(Enum):
     agent_id: str = "agent_id"
     distance: str = "distances"
     triangulation: str = "triangulation"
-    more: str = "more"
+    custom: str = "custom"
 
 
 class DataStorage(ABC):
@@ -24,18 +24,19 @@ class DataStorage(ABC):
         self.age = 0  # storage time of life (in seconds)
 
         self.data = {
-            # DataTypes.information: {
-            #     DataTypes.agent_id: self.agent_id,
-            # }
-        }
+            "distances": {
+                self.agent_id: {
 
+                }
+            },
+        }
         self.data_age = dict()
 
     def clock_tick(self):
-        self.age += 1 / self.clock_frequency  # allow for the time to be in seconds
+        self.age += self.clock_frequency  # allow for the time to be in seconds
 
     def _get_data_path(self, agent_id, data_type):
-        return [f"from_{data_type}_of_{self.agent_id}", f"agent_{agent_id}"]
+        return [data_type, agent_id]
 
     def _compute_data_age(self, agent_id, data_type):
         data_age = None
@@ -52,13 +53,34 @@ class DataStorage(ABC):
         else:
             return False
 
-    @abstractmethod
-    def _prepare_data_for_sending(self):
-        """Should send data + their relative age from the POV of the sender, only if not outdated"""
-        raise NotImplementedError("DataStorage does not implement a default data preparation")
+    def _set_data(self, agent_id, data_type, data):
+        path = self._get_data_path(agent_id, data_type)
 
-    def get_data_to_send(self):
-        return self._prepare_data_for_sending()
+        if self.agent_id == 0:
+            print("Path:", path)
+
+        if data_type not in self.data:
+            self.data[data_type] = dict()
+        if data_type not in self.data_age:
+            self.data_age[data_type] = dict()
+
+        data_storage = self.data
+        data_age = self.data_age
+
+        for element in path[:-1]:
+            if element not in data_storage:
+                data_storage[element] = dict()
+                data_age[element] = dict()
+            data_storage = data_storage[element]
+            data_age = data_age[element]
+
+        data_storage[path[-1]] = data
+        data_age[path[-1]] = self.age
+
+        if self.agent_id == 0:
+            print("Data:", data_storage[path[-1]])
+            print("Data Age:", data_age[path[-1]])
+            print("Data Storage:", self.data)
 
     def _get_data(self, agent_id, data_type, age=False):
         path = self._get_data_path(agent_id, data_type)
@@ -69,32 +91,56 @@ class DataStorage(ABC):
                 data = data[element]
             else:
                 return None
+            return data
 
-        return data
+    def _get_all_distances_not_outdated(self):
+        for agent_id in self.data[DataTypes.distance.value]:
+            if not self._is_outdated(agent_id, DataTypes.distance.value):
+                yield agent_id, self._get_data(agent_id, DataTypes.distance.value)
 
-    def _set_data(self, agent_id, data_type, data):
-        path = self._get_data_path(agent_id, data_type)
+    def _get_all_triangulation_not_outdated(self):
+        for agent_id in self.data[DataTypes.triangulation]:
+            if not self._is_outdated(agent_id, DataTypes.triangulation):
+                yield agent_id, self._get_data(agent_id, DataTypes.triangulation)
 
-        if data_type not in self.data:
-            self.data[data_type] = dict()
-        if data_type not in self.data_age:
-            self.data_age[data_type] = dict()
+    @abstractmethod
+    def get_data_to_send(self):
+        """Should send data + their relative age from the POV of the sender, only if not outdated"""
+        raise NotImplementedError("DataStorage does not implement a default data preparation")
 
-        data_storage = self.data if not isinstance(data, float) else self.data_age
+    def set_distance(self, agent_id, distance):
+        path = [DataTypes.distance.value, self.agent_id, agent_id]
+
+        if self.agent_id == 0:
+            print("Path:", path)
+
+        if DataTypes.distance.value not in self.data:
+            self.data[DataTypes.distance.value] = dict()
+        if DataTypes.distance.value not in self.data_age:
+            self.data_age[DataTypes.distance.value] = dict()
+
+        data_storage = self.data
+        data_age = self.data_age
+
         for element in path[:-1]:
             if element not in data_storage:
                 data_storage[element] = dict()
+            if element not in data_age:
+                data_age[element] = dict()
+
             data_storage = data_storage[element]
-        data_storage[path[-1]] = data
+            data_age = data_age[element]
 
-    def set_data(self, agent_id, data_type, data):
-        self._set_data(agent_id, data_type, data)
+        data_storage[path[-1]] = distance
+        data_age[path[-1]] = self.age
 
-    def get_distance_information(self, agent_id):
-        return self._get_data(agent_id, DataTypes.distance)
-
-    def set_distance_information(self, agent_id, distance):
-        self.set_data(agent_id, DataTypes.distance, distance)
+    def set_information(self, agent_id, information):
+        """
+        :param agent_id: id of the agent that sent the information
+        :param information: data to store
+        """
+        for data_type in information:
+            self._set_data(agent_id, data_type, information[data_type])
 
     def __str__(self):
         return str(self.data)
@@ -107,5 +153,8 @@ class DataStorage(ABC):
 
 
 class FakeDataStorage(DataStorage):
-    def _prepare_data_for_sending(self):
+    def __init__(self):
+        super().__init__(0, time_to_live=10, clock_frequency=0.01)
+
+    def get_data_to_send(self):
         return dict()

@@ -2,6 +2,7 @@ from src.modules.communication.types.delaunay import DelaunayNetworkCommunicatio
 from src.modules.communication.types.distance import DistanceLimitedCommunication
 from src.modules.communication.types.general import GlobalCommunication
 from src.modules.movement.simple import walk_forward, random_walk
+from src.modules.storage.types.distance import DistanceOnlyStorage
 from src.modules.triangulation.types.delaunay import DelaunayTriangulation
 from src.modules.triangulation.types.reconstruct import ReconstructTriangulation
 from src.simulation.arena import RectangleArena, Arena
@@ -188,6 +189,29 @@ class DelaunayCommunicationExperiment(Simulation):
                 triangulation=DelaunayTriangulation(
                     agent_id=i,
                     precision=self.triangulation_precision,
+                ),
+                agent_movement=walk_forward,
+            ) for i in range(self.dim)
+        ]
+
+
+class TestExperiment(Simulation):
+    def setup(self):
+        self.agents = [
+            Agent(
+                i, *self.arena.place_agent_randomly(),
+                agents_speed=self.agents_speed,
+                communication=GlobalCommunication(
+                    agent_id=i,
+                    refresh_rate=self.refresh_rate,
+                    communication_frequency=self.communication_frequency,
+                ),
+                triangulation=DelaunayTriangulation(
+                    agent_id=i,
+                    precision=self.triangulation_precision,
+                ),
+                data_storage=DistanceOnlyStorage(
+                    agent_id=i,
                 ),
                 agent_movement=walk_forward,
             ) for i in range(self.dim)
