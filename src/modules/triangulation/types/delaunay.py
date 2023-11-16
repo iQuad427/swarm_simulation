@@ -84,14 +84,7 @@ class DelaunaySubTriangulation(DelaunayTriangulation):
             self.index_to_id.append(other_agent_id)
 
     def update_triangulation(self):
-        # if self.agent_id == 0:
-        #     print("UPDATING SUB TRIANGULATION")
-
         x, y, _ = super().update_triangulation()
-
-        # if self.agent_id == 0:
-        #     print("X:", x)
-        #     print("Y:", y)
 
         if x is None or y is None:
             return None, None, {}
@@ -103,8 +96,5 @@ class DelaunaySubTriangulation(DelaunayTriangulation):
         }
 
         res[self.agent_id] = [0, 0]
-
-        # if self.agent_id == 0:
-        #     print("RES:", res)
 
         return x, y, res

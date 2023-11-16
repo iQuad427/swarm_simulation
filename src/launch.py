@@ -1,8 +1,9 @@
 from src.experiments import (
     SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment,
     AllStaticButOneRandomPlacementDelaunayTriangulationDistanceLimitedCommunicationExperiment,
-    AllStaticRectanglePlacementExperiment, DelaunayCommunicationExperiment,
+    AllStaticRectanglePlacementExperiment, DelaunayCommunicationExperiment, TestExperiment,
 )
+from src.modules.triangulation.types.reconstruct import ReconstructTriangulation
 
 if __name__ == '__main__':
     # TODO:
@@ -31,10 +32,13 @@ if __name__ == '__main__':
     #      - add noise to the distances (about 10 centimeters of precision)
     #      - add chance for bad package reception (negative distance, distance of 0, etc.)
     #   - possibly add the TTL mechanism to avoid overwriting new information with old ones
+    #      - already implemented TTL before sending information
+    #      - still need to add a TTL verification at use also (could even remove the TTL before sending)
+    #         - need to transfer the relative age of the data
     #   - find an iterative way to triangulate the swarm;
     #      - avoid recomputing the triangulation from scratch each time
 
-    experiment = DelaunayCommunicationExperiment(
+    experiment = TestExperiment(
         dim=6,  # number of agents
         refresh_rate=0.01,  # refresh rate of the simulation (in seconds)
         agents_speed=1,  # speed of the agents (in meters per second)

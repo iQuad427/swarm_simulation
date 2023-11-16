@@ -25,5 +25,4 @@ class GlobalCommunication(Communication):
         return other_agent.id, distance, information
 
     def send_information(self):
-        # TODO: could want to make noisy response
-        return self.data[self.agent_id]
+        return self.data

@@ -7,10 +7,7 @@ class Communication:
         self.refresh_rate = refresh_rate
         self.communication_chances = self.refresh_rate / communication_frequency
 
-        self.data = dict({
-            self.agent_id: dict(),
-            "more": dict()
-        })
+        self.data = dict()
 
     def receive_information(self, other_agents: list, context: np.ndarray):
         raise NotImplementedError("Communication does not implement a default receive_information")
