@@ -78,13 +78,13 @@ class Agent:
                 time.sleep(self.triangulation.refresh_rate)
                 continue
 
-            x, y, more_information = self.triangulation.update_triangulation()
+            x, y, triangulation = self.triangulation.update_triangulation()
 
-            if more_information is not None and isinstance(more_information, dict):
+            if triangulation is not None and isinstance(triangulation, dict):
                 self.data.set_information(
                     self.id,
                     information={
-                        DataTypes.triangulation: more_information
+                        DataTypes.triangulation.value: triangulation
                     },
                 )
 

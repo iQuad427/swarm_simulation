@@ -40,4 +40,4 @@ class DistanceLimitedCommunication(Communication):
         return other_agent.id, distance, information
 
     def send_information(self):
-        return self.data[self.agent_id]
+        return self.data

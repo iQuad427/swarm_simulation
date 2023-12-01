@@ -2,7 +2,7 @@ from src.modules.communication.types.delaunay import DelaunayNetworkCommunicatio
 from src.modules.communication.types.distance import DistanceLimitedCommunication
 from src.modules.communication.types.general import GlobalCommunication
 from src.modules.movement.simple import walk_forward, random_walk
-from src.modules.storage.types.distance import DistanceOnlyStorage
+from src.modules.storage.types.distance import DistanceOnlyStorage, DistanceAndTriangulationStorage
 from src.modules.triangulation.types.delaunay import DelaunayTriangulation
 from src.modules.triangulation.types.reconstruct import ReconstructTriangulation
 from src.simulation.arena import RectangleArena, Arena
@@ -170,6 +170,59 @@ class AllStaticRectanglePlacementExperiment(Simulation):
                     agent_id=i,
                     precision=self.triangulation_precision,
                 ),
+                data_storage=DistanceAndTriangulationStorage(
+                    agent_id=i,
+                ),
+                agent_movement=walk_forward,
+            ) for i in range(self.dim)
+        ]
+
+
+class OneAwayFromOther(Simulation):
+    def __init__(
+            self, arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
+            refresh_rate=0.01,  # 10 milliseconds
+            agents_speed=0.05,  # 5 centimeters per seconds
+            triangulation_precision=1.0,  # 1 meter
+            communication_frequency=0.5,  # 500 milliseconds
+            communication_radius=20.0,  # 10 meters
+    ):
+        super().__init__(
+            dim=5, arena=arena,
+            refresh_rate=refresh_rate,
+            agents_speed=agents_speed,
+            triangulation_precision=triangulation_precision,
+            communication_frequency=communication_frequency,
+        )
+
+        self.arena = RectangleArena(xlim=50, ylim=50, width=50, height=50)
+        self.communication_radius = communication_radius
+
+    def setup(self):
+
+        placement = [
+            [25, 25],
+            [10, 10], [10, 20],
+            [20, 10], [20, 20],
+        ]
+
+        self.agents = [
+            Agent(
+                i, *placement[i],
+                agents_speed=0,
+                communication=DistanceLimitedCommunication(
+                    agent_id=i,
+                    refresh_rate=self.refresh_rate,
+                    communication_frequency=self.communication_frequency,
+                    radius=self.communication_radius,
+                ),
+                triangulation=ReconstructTriangulation(
+                    agent_id=i,
+                    precision=self.triangulation_precision,
+                ),
+                data_storage=DistanceAndTriangulationStorage(
+                    agent_id=i,
+                ),
                 agent_movement=walk_forward,
             ) for i in range(self.dim)
         ]
@@ -189,6 +242,9 @@ class DelaunayCommunicationExperiment(Simulation):
                 triangulation=DelaunayTriangulation(
                     agent_id=i,
                     precision=self.triangulation_precision,
+                ),
+                data_storage=DistanceOnlyStorage(
+                    agent_id=i,
                 ),
                 agent_movement=walk_forward,
             ) for i in range(self.dim)

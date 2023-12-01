@@ -19,9 +19,10 @@ class DistanceOnlyStorage(DataStorage):
 
 
 class DistanceOnlyTTLStorage(DataStorage):
+    # TODO: verify the good working of this class
     def _prepare_data_for_sending(self):
         return {
-            DataTypes.distance.value: dict(self._get_all_distances_not_outdated()),
+            # DataTypes.distance.value: dict(self._get_all_distances_not_outdated()),
         }
 
     def get_data_to_send(self):
@@ -31,9 +32,15 @@ class DistanceOnlyTTLStorage(DataStorage):
 class DistanceAndTriangulationStorage(DataStorage):
 
     def _prepare_data_for_sending(self):
+
+        # if DataTypes.triangulation.value not in self.data:
+        #     self.data[DataTypes.triangulation.value] = dict()
+        # if DataTypes.triangulation.value not in self.data_age:
+        #     self.data_age[DataTypes.triangulation.value] = dict()
+
         return {
-            DataTypes.triangulation.value: self.data[DataTypes.triangulation.value],
-            DataTypes.distance.value: self.data[DataTypes.distance.value],
+            DataTypes.triangulation.value: self.data[DataTypes.triangulation.value][self.agent_id],
+            DataTypes.distance.value: self.data[DataTypes.distance.value][self.agent_id],
         }
 
     def get_data_to_send(self):
@@ -41,11 +48,11 @@ class DistanceAndTriangulationStorage(DataStorage):
 
 
 class DistanceAndTriangulationTTLStorage(DataStorage):
-
+    # TODO: verify the good working of this class
     def _prepare_data_for_sending(self):
         return {
-            DataTypes.triangulation.value: dict(self._get_all_triangulation_not_outdated()),
-            DataTypes.distance.value: dict(self._get_all_distances_not_outdated()),
+            # DataTypes.triangulation.value: dict(self._get_all_triangulation_not_outdated()),
+            # DataTypes.distance.value: dict(self._get_all_distances_not_outdated()),
         }
 
     def get_data_to_send(self):

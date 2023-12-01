@@ -1,7 +1,7 @@
 from src.experiments import (
     SameSpeedRandomPlacementDelaunayTriangulationGlobalCommunicationExperiment,
     AllStaticButOneRandomPlacementDelaunayTriangulationDistanceLimitedCommunicationExperiment,
-    AllStaticRectanglePlacementExperiment, DelaunayCommunicationExperiment, TestExperiment,
+    AllStaticRectanglePlacementExperiment, DelaunayCommunicationExperiment, TestExperiment, OneAwayFromOther,
 )
 from src.modules.triangulation.types.reconstruct import ReconstructTriangulation
 
@@ -38,12 +38,12 @@ if __name__ == '__main__':
     #   - find an iterative way to triangulate the swarm;
     #      - avoid recomputing the triangulation from scratch each time
 
-    experiment = TestExperiment(
-        dim=6,  # number of agents
+    experiment = OneAwayFromOther(
+        # dim=5,  # number of agents
         refresh_rate=0.01,  # refresh rate of the simulation (in seconds)
         agents_speed=1,  # speed of the agents (in meters per second)
         triangulation_precision=0.1,  # precision of the triangulation (in meters)
         communication_frequency=0.01,  # frequency of the communication (in seconds)
-        # communication_radius=20,  # radius of the communication (in meters)
+        communication_radius=15,  # radius of the communication (in meters)
     )
     experiment.launch()

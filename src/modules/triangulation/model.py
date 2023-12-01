@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
+from src.modules.storage.model import DataTypes
+
 
 class Triangulation(ABC):  # abstract class
     def __init__(self, agent_id, precision=1.0, refresh_rate=0.05):
@@ -69,8 +71,8 @@ class DistanceMatrixTriangulation(Triangulation, ABC):
         return matrix
 
     def update_information(self, other_agent_id, distance, information):
-        if "distances" in information:
-            information = information["distances"]
+        if DataTypes.distance.value in information:
+            information = information[DataTypes.distance.value]
         else:
             return
 
@@ -93,6 +95,7 @@ class DistanceMatrixTriangulation(Triangulation, ABC):
             else:
                 # agent doesn't know the given robot, does not listen
                 pass
+
 
 class FakeTriangulation(Triangulation):
     """Fake triangulation for testing purposes"""

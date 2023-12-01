@@ -24,10 +24,11 @@ class DataStorage(ABC):
         self.age = 0  # storage time of life (in seconds)
 
         self.data = {
-            "distances": {
-                self.agent_id: {
-
-                }
+            DataTypes.distance.value: {
+                self.agent_id: {}
+            },
+            DataTypes.triangulation.value: {
+                self.agent_id: {}
             },
         }
         self.data_age = dict()
@@ -93,15 +94,15 @@ class DataStorage(ABC):
                 return None
             return data
 
-    def _get_all_distances_not_outdated(self):
-        for agent_id in self.data[DataTypes.distance.value]:
-            if not self._is_outdated(agent_id, DataTypes.distance.value):
-                yield agent_id, self._get_data(agent_id, DataTypes.distance.value)
+    # def _get_all_distances_not_outdated(self):
+    #     for agent_id in self.data[DataTypes.distance.value]:
+    #         if not self._is_outdated(agent_id, DataTypes.distance.value):
+    #             yield agent_id, self._get_data(agent_id, DataTypes.distance.value)
 
-    def _get_all_triangulation_not_outdated(self):
-        for agent_id in self.data[DataTypes.triangulation]:
-            if not self._is_outdated(agent_id, DataTypes.triangulation):
-                yield agent_id, self._get_data(agent_id, DataTypes.triangulation)
+    # def _get_all_triangulation_not_outdated(self):
+    #     for agent_id in self.data[DataTypes.triangulation]:
+    #         if not self._is_outdated(agent_id, DataTypes.triangulation):
+    #             yield agent_id, self._get_data(agent_id, DataTypes.triangulation)
 
     @abstractmethod
     def get_data_to_send(self):
