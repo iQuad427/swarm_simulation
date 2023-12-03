@@ -1,7 +1,6 @@
+from scipy.cluster.hierarchy import linkage, dendrogram
 import numpy as np
 from scipy.spatial import distance_matrix
-from scipy.spatial import distance
-from sklearn.manifold import MDS
 import matplotlib.pyplot as plt
 
 # Create the matrix
@@ -20,23 +19,19 @@ tmp = np.array([
     [120, 140, 140, 140, 80, 60, 80, 80, 20, 20, 20, 0]
 ])
 
-# Convert the matrix to a distance matrix
-d = distance_matrix(tmp, tmp)
+# Calculate the distance matrix
+d = distance_matrix(1 - tmp, 1 - tmp)
 
-# Perform classical multidimensional scaling
-mds = MDS(n_components=2, dissimilarity='precomputed', normalized_stress=False)
-mds_coors = mds.fit_transform(d)
+# Perform hierarchical clustering
+linkage_matrix = linkage(d, method='single')
 
-# Plot the results
-plt.scatter(mds_coors[:, 0], mds_coors[:, 1], s=50, alpha=0.5)
-for i, label in enumerate(list('ABCDEFGHIJKL')):
-    plt.text(mds_coors[i, 0], mds_coors[i, 1], label, fontsize=8)
-plt.axhline(0, color='gray', linestyle='--', linewidth=0.8)
-plt.axvline(0, color='gray', linestyle='--', linewidth=0.8)
+# Plot the dendrogram
+dendrogram(linkage_matrix, labels=list('ABCDEFGHIJKL'), orientation='right')
 plt.xlabel('')
-plt.ylabel('')
+plt.ylabel('Cluster Distance')
+plt.title('Hierarchical Clustering Dendrogram')
 
 # save the plot
-plt.savefig('mds.png', dpi=300)
+plt.savefig('dendrogram.png', dpi=300)
 
 plt.show()
