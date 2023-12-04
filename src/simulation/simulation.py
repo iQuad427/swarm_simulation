@@ -17,7 +17,7 @@ class Simulation:
             self,
             # SIMULATION PARAMETERS
             dim=5,
-            arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
+            arena: Arena = RectangleArena(xlim=100, ylim=100, width=50, height=50),
             refresh_rate=0.01,  # 10 milliseconds
             # AGENTS PARAMETERS
             agents_speed=0.05,  # 5 centimeters per seconds
@@ -142,11 +142,11 @@ class Simulation:
                         default_x = dpg.add_plot_axis(
                             axis=0, no_gridlines=True, no_tick_marks=True, no_tick_labels=True, label="", lock_min=True
                         )
-                        dpg.set_axis_limits(axis=default_x, ymin=0, ymax=self.arena.xlim)
+                        dpg.set_axis_limits(axis=default_x, ymin=0, ymax=50)
                         default_y = dpg.add_plot_axis(
                             axis=1, no_gridlines=True, no_tick_marks=True, no_tick_labels=True, label="", lock_min=True
                         )
-                        dpg.set_axis_limits(axis=default_y, ymin=0, ymax=self.arena.ylim)
+                        dpg.set_axis_limits(axis=default_y, ymin=0, ymax=50)
 
                         # Draw arena walls
                         if isinstance(self.arena, RectangleArena):

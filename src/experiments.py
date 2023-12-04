@@ -4,6 +4,7 @@ from src.modules.communication.types.general import GlobalCommunication
 from src.modules.movement.simple import walk_forward, random_walk
 from src.modules.storage.types.distance import DistanceOnlyStorage, DistanceAndTriangulationStorage
 from src.modules.triangulation.types.delaunay import DelaunayTriangulation
+from src.modules.triangulation.types.mds import MDScaleTriangulation
 from src.modules.triangulation.types.reconstruct import ReconstructTriangulation
 from src.simulation.arena import RectangleArena, Arena
 from src.simulation.simulation import Simulation, Agent
@@ -129,7 +130,7 @@ class AllStaticButOneRandomPlacementDelaunayTriangulationDistanceLimitedCommunic
 
 class AllStaticRectanglePlacementExperiment(Simulation):
     def __init__(
-            self, dim=5, arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
+            self, dim=16, arena: Arena = RectangleArena(xlim=50, ylim=50, width=50, height=50),
             refresh_rate=0.01,  # 10 milliseconds
             agents_speed=0.05,  # 5 centimeters per seconds
             triangulation_precision=1.0,  # 1 meter
@@ -137,7 +138,7 @@ class AllStaticRectanglePlacementExperiment(Simulation):
             communication_radius=10.0,  # 10 meters
     ):
         super().__init__(
-            dim=16, arena=arena,
+            dim=dim, arena=arena,
             refresh_rate=refresh_rate,
             agents_speed=agents_speed,
             triangulation_precision=triangulation_precision,
@@ -160,13 +161,13 @@ class AllStaticRectanglePlacementExperiment(Simulation):
             Agent(
                 i, *placement[i],
                 agents_speed=0,
-                communication=DistanceLimitedCommunication(
+                communication=GlobalCommunication(
                     agent_id=i,
                     refresh_rate=self.refresh_rate,
                     communication_frequency=self.communication_frequency,
-                    radius=self.communication_radius,
+                    # radius=self.communication_radius,
                 ),
-                triangulation=ReconstructTriangulation(
+                triangulation=MDScaleTriangulation(
                     agent_id=i,
                     precision=self.triangulation_precision,
                 ),
@@ -262,11 +263,12 @@ class TestExperiment(Simulation):
                     refresh_rate=self.refresh_rate,
                     communication_frequency=self.communication_frequency,
                 ),
-                triangulation=DelaunayTriangulation(
+                triangulation=MDScaleTriangulation(
                     agent_id=i,
                     precision=self.triangulation_precision,
+                    refresh_rate=0.5
                 ),
-                data_storage=DistanceOnlyStorage(
+                data_storage=DistanceAndTriangulationStorage(
                     agent_id=i,
                 ),
                 agent_movement=walk_forward,

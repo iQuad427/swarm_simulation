@@ -54,22 +54,6 @@ class DistanceMatrixTriangulation(Triangulation, ABC):
         new_matrix[0:self.dim - 1, 0:self.dim - 1] = self.distance_matrix
         self.distance_matrix = new_matrix
 
-    def _prune_distance_matrix(self):
-        """Property: Only need three agents information to triangulate a fourth one position"""
-
-        matrix = np.zeros((self.dim, self.dim), dtype=float)
-
-        for i in range(self.dim):
-            count = 0
-            for j in range(i + 1, self.dim):
-                if self.distance_matrix[i, j] > 0 and not count >= 3:
-                    matrix[i, j] = self.distance_matrix[i, j]
-                    count += 1
-                else:
-                    matrix[i, j] = -1
-
-        return matrix
-
     def update_information(self, other_agent_id, distance, information):
         if DataTypes.distance.value in information:
             information = information[DataTypes.distance.value]

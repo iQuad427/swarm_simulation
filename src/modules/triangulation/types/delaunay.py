@@ -1,4 +1,6 @@
 import math
+
+import numpy as np
 from welltestpy.tools import triangulate, sym
 
 from src.modules.triangulation.model import DistanceMatrixTriangulation
@@ -11,6 +13,22 @@ class DelaunayTriangulation(DistanceMatrixTriangulation):
         super().__init__(agent_id, precision=precision, refresh_rate=refresh_rate)
 
         self.previous_const = []
+
+    def _prune_distance_matrix(self):
+        """Property: Only need three agents information to triangulate a fourth one position"""
+
+        matrix = np.zeros((self.dim, self.dim), dtype=float)
+
+        for i in range(self.dim):
+            count = 0
+            for j in range(i + 1, self.dim):
+                if self.distance_matrix[i, j] > 0 and not count >= 3:
+                    matrix[i, j] = self.distance_matrix[i, j]
+                    count += 1
+                else:
+                    matrix[i, j] = -1
+
+        return matrix
 
     def update_triangulation(self):
         if self.dim < 2:
