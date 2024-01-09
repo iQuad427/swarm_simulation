@@ -38,4 +38,5 @@ plt.ylabel('Y-axis')
 plt.legend()
 
 # Show the plot
+plt.savefig("triangulation.png", dpi=300)
 plt.show()

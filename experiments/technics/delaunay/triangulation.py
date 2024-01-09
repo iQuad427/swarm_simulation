@@ -30,9 +30,10 @@ dist_mat = sym(dist_mat)  # make the distance matrix symmetric
 
 print(dist_mat)
 
-well_const = triangulate(dist_mat, prec=0.5)
+well_const = triangulate(dist_mat, prec=0.1, all_pos=False)
 
 print(well_const)
+print(len(well_const))
 
 # well_const is a list of possible graphs
 # each graph is a list of coordinates
@@ -48,6 +49,7 @@ for i, const in enumerate(well_const):
         axs[i].plot(coord[0], coord[1], 'o', label=f'well {j}')
 
 
+plt.savefig('delauny.png', dpi=300)
 plt.show()
 
 

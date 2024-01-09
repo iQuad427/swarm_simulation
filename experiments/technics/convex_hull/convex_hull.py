@@ -19,4 +19,6 @@ for ax in (ax1, ax2):
         ax.plot(points[hull.vertices, 0], points[hull.vertices, 1], 'o', mec='r', color='none', lw=1, markersize=10)
     ax.set_xticks(range(10))
     ax.set_yticks(range(10))
+
+plt.savefig("convex_hull.png", dpi=300)
 plt.show()
