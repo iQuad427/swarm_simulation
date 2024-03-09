@@ -41,8 +41,9 @@ if __name__ == '__main__':
     experiment = TestExperiment(
         dim=30,  # number of agents
         refresh_rate=0.01,  # refresh rate of the simulation (in seconds)
-        agents_speed=0.1,  # speed of the agents (in meters per second)
+        agents_speed=0.5,  # speed of the agents (in meters per second)
         triangulation_precision=0.1,  # precision of the triangulation (in meters)
+        triangulation_frequency=0.01,  # frequency of the triangulation (in seconds)
         communication_frequency=0.01,  # frequency of the communication (in seconds)
         # communication_radius=15,  # radius of the communication (in meters)
     )

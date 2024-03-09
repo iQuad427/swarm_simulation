@@ -266,7 +266,7 @@ class TestExperiment(Simulation):
                 triangulation=MDScaleTriangulation(
                     agent_id=i,
                     precision=self.triangulation_precision,
-                    refresh_rate=0.5
+                    refresh_rate=self.triangulation_frequency,
                 ),
                 data_storage=DistanceAndTriangulationStorage(
                     agent_id=i,

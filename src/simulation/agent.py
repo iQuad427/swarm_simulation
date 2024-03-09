@@ -101,33 +101,17 @@ class Agent:
                 time.sleep(self.communication.refresh_rate)
                 continue
 
-            if self.id == 0:
-                print("Starting Communication")
-
             # Receive information from another agent
             agent_id, distance, information = self.communication.receive_information(agents, context)
-
-            if self.id == 0:
-                print(f"Received Information from {agent_id}:", distance, information)
 
             if agent_id == -1:
                 # Drop the information, did not communicate
                 continue
 
-            if self.id == 0:
-                print("Updating Data")
-
             self.data.set_distance(agent_id, distance)
             self.data.set_information(agent_id, information)
 
-            if self.id == 0:
-                print("New Data:", self.data)
-                print("Updating Data to Send")
-
             self.communication.data = self.data.get_data_to_send()
-
-            if self.id == 0:
-                print("Data to Send:", self.communication.data)
 
             # Update triangulation with the new information
             self.triangulation.update_information(agent_id, distance, information)

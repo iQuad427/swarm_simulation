@@ -23,6 +23,7 @@ class Simulation:
             agents_speed=0.05,  # 5 centimeters per seconds
             # MODULES PARAMETERS
             triangulation_precision=1.0,  # 1 meter
+            triangulation_frequency=0.5,  # 500 milliseconds
             communication_frequency=0.5,  # 500 milliseconds
     ):
         self.dim = dim
@@ -35,6 +36,7 @@ class Simulation:
         self.refresh_rate = refresh_rate  # simulation refresh rate in seconds
         self.agents_speed = agents_speed * self.refresh_rate  # to have a speed in meters per refresh_rate
         self.triangulation_precision = triangulation_precision
+        self.triangulation_frequency = triangulation_frequency
         self.communication_frequency = communication_frequency
 
         # Simulation Information
@@ -125,6 +127,8 @@ class Simulation:
 
     def render_triangulation(self):
         for agent in self.agents:
+            if agent.id != 0:
+                continue
             dpg.configure_item(f"triangulation_{str(agent)}", x=agent.tri_x, y=agent.tri_y)
 
     def launch_gui(self):
@@ -182,6 +186,9 @@ class Simulation:
 
                     with triangulation_tab_bar:
                         for agent in self.agents:
+                            if agent.id != 0:
+                                continue
+
                             with dpg.tab(label=f"{str(agent)}"):
                                 with dpg.plot(
                                         no_menus=False, no_title=True, no_box_select=True, no_mouse_pos=True,
@@ -218,7 +225,6 @@ class Simulation:
                     dpg.configure_item(agents_label[agent.id], pos=(agent.x - agent.radius / 2, agent.y + agent.radius))
 
                 self.update_matrices()
-                # self.update_triangulation()
 
             self.render_triangulation()
             dpg.render_dearpygui_frame()

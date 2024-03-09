@@ -57,9 +57,6 @@ class DataStorage(ABC):
     def _set_data(self, agent_id, data_type, data):
         path = self._get_data_path(agent_id, data_type)
 
-        if self.agent_id == 0:
-            print("Path:", path)
-
         if data_type not in self.data:
             self.data[data_type] = dict()
         if data_type not in self.data_age:
@@ -77,11 +74,6 @@ class DataStorage(ABC):
 
         data_storage[path[-1]] = data
         data_age[path[-1]] = self.age
-
-        if self.agent_id == 0:
-            print("Data:", data_storage[path[-1]])
-            print("Data Age:", data_age[path[-1]])
-            print("Data Storage:", self.data)
 
     def _get_data(self, agent_id, data_type, age=False):
         path = self._get_data_path(agent_id, data_type)
@@ -111,9 +103,6 @@ class DataStorage(ABC):
 
     def set_distance(self, agent_id, distance):
         path = [DataTypes.distance.value, self.agent_id, agent_id]
-
-        if self.agent_id == 0:
-            print("Path:", path)
 
         if DataTypes.distance.value not in self.data:
             self.data[DataTypes.distance.value] = dict()
