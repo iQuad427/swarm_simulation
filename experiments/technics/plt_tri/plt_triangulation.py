@@ -28,8 +28,21 @@ print(triangulation.edges)
 print(triangulation.triangles)
 print(triangulation.neighbors)
 
+# Print neighbour of
+
 # Plot the original points
 plt.scatter(x, y, c='blue', label='Original Points')
+plt.scatter(x[0], y[0], c='red')
+# Plot neighbours of the first point
+for i, j in triangulation.edges:
+    print(i, j)
+    if i == 0:
+        print(x[j], y[j])
+        plt.scatter(x[j], y[j], c='green')
+    elif j == 0:
+        print(x[i], y[i])
+        plt.scatter(x[i], y[i], c='green')
+
 
 # Set plot properties
 plt.title('Triangulation of Random Points')

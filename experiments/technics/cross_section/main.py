@@ -118,7 +118,6 @@ if __name__ == '__main__':
     fig = plt.gcf()
     fig.set_size_inches(100, 100)
 
-
     for node, position in positions.items():
         # Plot real position in blue
         ax.scatter(position[0], position[1])
@@ -147,6 +146,7 @@ if __name__ == '__main__':
         # Skip if node is Beacon or main node
         if node.name == 'Beacon' or node.name == '0':
             continue
+
         # Plot circle centered around current new position, with radius the distance to the new position of the main node
         distance_to_main_node = ((new_position[0] - main_node_new_position[0]) ** 2 + (
                     new_position[1] - main_node_new_position[1]) ** 2) ** 0.5
