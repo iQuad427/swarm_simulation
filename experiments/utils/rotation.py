@@ -33,20 +33,20 @@ def find_rotation_matrix(X, Y):
     return R
 
 
-def rotate_and_translate(points, mds_coors):
-    rotation = find_rotation_matrix(points.T, mds_coors.T)
+def rotate_and_translate(reference, points):
+    rotation = find_rotation_matrix(reference.T, points.T)
 
     # Apply the rotation
-    mds_coors_rotated = mds_coors @ rotation
+    points_rotated = points @ rotation
 
     # First, find the centroid of the original points
-    centroid = np.mean(points, axis=0)
+    centroid = np.mean(reference, axis=0)
 
     # Then, find the centroid of the MDS points
-    mds_centroid = np.mean(mds_coors_rotated, axis=0)
+    points_centroid = np.mean(points_rotated, axis=0)
 
     # Find the translation vector
-    translation = centroid - mds_centroid
+    translation = centroid - points_centroid
 
     # Translate the MDS points
-    return mds_coors_rotated + translation
+    return points_rotated + translation
